@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+
+# Netlify
+.netlify/
+
+# Local server directory (we're using Netlify functions instead)
+server/
+
+# Test files
+test-ghl-webhook.js
+SETUP_NOTES.md

@@ -1,0 +1,318 @@
+/* ===========================
+   Keyframe Animations
+   =========================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Rotation removed - video handles animation */
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
+    }
+    50% {
+        filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.8));
+    }
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* ===========================
+   Page Load Animations
+   =========================== */
+
+body {
+    animation: fadeIn 0.5s ease;
+}
+
+.logo-container {
+    animation: slideInRight 0.6s ease 0.2s both;
+}
+
+.logo-image {
+    animation: glow 3s ease-in-out infinite;
+}
+
+.logo-icon {
+    animation: glow 3s ease-in-out infinite;
+}
+
+.player-card {
+    animation: slideInLeft 0.6s ease 0.3s both;
+}
+
+.main-title {
+    animation: slideUp 0.6s ease 0.4s both;
+}
+
+.main-subtitle {
+    animation: slideUp 0.6s ease 0.5s both;
+}
+
+.main-play-btn {
+    animation: scaleIn 0.5s ease 0.6s both;
+}
+
+.coming-soon-section {
+    animation: fadeIn 0.6s ease 0.7s both;
+}
+
+.coming-soon-card:nth-child(1) {
+    animation: slideUp 0.5s ease 0.8s both;
+}
+
+.coming-soon-card:nth-child(2) {
+    animation: slideUp 0.5s ease 0.9s both;
+}
+
+.coming-soon-card:nth-child(3) {
+    animation: slideUp 0.5s ease 1s both;
+}
+
+/* ===========================
+   Interactive Animations
+   =========================== */
+
+/* Ripple Effect on Button Click */
+.control-btn::before,
+.main-play-btn::before,
+.submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    pointer-events: none;
+}
+
+.control-btn.ripple::before,
+.main-play-btn.ripple::before,
+.submit-btn.ripple::before {
+    animation: ripple 0.6s ease-out;
+}
+
+/* Album Art - No Rotation (Video handles animation) */
+.album-art.playing {
+    /* Video loop provides the animation */
+}
+
+/* Progress Bar Handle Pulse */
+.progress-handle {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.progress-bar:active .progress-handle {
+    transform: translateY(-50%) scale(1.2);
+}
+
+/* Modal Animations */
+.modal-overlay {
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    animation: scaleIn 0.3s ease;
+}
+
+.success-message {
+    animation: scaleIn 0.5s ease;
+}
+
+.success-message svg {
+    animation: scaleIn 0.6s ease 0.2s both;
+}
+
+/* Loading Spinner */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading {
+    animation: spin 1s linear infinite;
+}
+
+/* Button Press Feedback */
+.control-btn:active,
+.coming-soon-card:active,
+.main-play-btn:active,
+.submit-btn:active {
+    animation: none;
+}
+
+/* Hover Glow Effect */
+@keyframes hover-glow {
+    0% {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    100% {
+        box-shadow: 0 12px 48px rgba(212, 175, 55, 0.3);
+    }
+}
+
+.coming-soon-card:hover {
+    animation: hover-glow 0.3s ease forwards;
+}
+
+/* Progress Fill Animation */
+.progress-fill {
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .album-art.playing {
+        animation: none;
+    }
+
+    .logo-icon {
+        animation: none;
+    }
+}
+
+/* Focus Visible Animations */
+*:focus-visible {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Toast Notification Animation */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOutUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+.toast-notification {
+    animation: slideInDown 0.3s ease;
+}
+
+.toast-notification.hiding {
+    animation: slideOutUp 0.3s ease;
+}

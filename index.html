@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ThaMyind - Faith-based music for peace and inspiration">
+    <title>Pray - ThaMyind | Myind Sound</title>
+    <link rel="icon" type="image/png" href="assets/images/Myind Sound Main Logo.png">
+    <link rel="apple-touch-icon" href="assets/images/Myind Sound Main Logo.png">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- Background Video -->
+    <div class="video-background">
+        <video id="bgVideo" autoplay loop muted playsinline class="bg-video">
+            <source src="assets/videos/BGFinal.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+    </div>
+
+    <!-- Myind Sound Logo -->
+    <div class="logo-container">
+        <div class="logo">
+            <a href="https://www.myindsound.com" target="_blank" rel="noopener noreferrer">
+                <img src="assets/images/Myind Sound Main Logo.png" alt="Myind Sound" class="logo-image">
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Music Player Card (Left) -->
+        <div class="player-card">
+            <div class="album-art-container">
+                <video src="assets/videos/pray.mp4"
+                       alt="Pray album cover"
+                       class="album-art"
+                       id="albumArt"
+                       autoplay
+                       loop
+                       muted
+                       playsinline></video>
+            </div>
+
+            <div class="song-info">
+                <h2 class="song-title" id="songTitle">Pray</h2>
+                <p class="artist-name" id="artistName">ThaMyind</p>
+            </div>
+
+            <div class="player-controls">
+                <button class="control-btn" id="repeatBtn" aria-label="Repeat">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 1l4 4-4 4"/>
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                        <path d="M7 23l-4-4 4-4"/>
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                    </svg>
+                </button>
+
+                <button class="control-btn" id="prevBtn" aria-label="Previous track">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                    </svg>
+                </button>
+
+                <button class="control-btn play-btn" id="playBtn" aria-label="Play">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="play-icon">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="pause-icon" style="display: none;">
+                        <path d="M6 4h4v16H6zm8 0h4v16h-4z"/>
+                    </svg>
+                </button>
+
+                <button class="control-btn" id="nextBtn" aria-label="Next track">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 18h2V6h-2zm-11-7l8.5-6v12z"/>
+                    </svg>
+                </button>
+
+                <button class="control-btn volume-btn" id="volumeBtn" aria-label="Volume">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="volume-high">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                    </svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="volume-muted" style="display: none;">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <line x1="23" y1="9" x2="17" y2="15"/>
+                        <line x1="17" y1="9" x2="23" y2="15"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="progress-container">
+                <span class="time-display" id="currentTime">02:10</span>
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-handle" id="progressHandle"></div>
+                </div>
+                <span class="time-display" id="totalTime">03:45</span>
+            </div>
+
+            <!-- Volume Slider (Hidden by default) -->
+            <div class="volume-slider-container" id="volumeSlider" style="display: none;">
+                <input type="range" min="0" max="100" value="70" class="volume-slider" id="volumeSliderInput" aria-label="Volume control">
+            </div>
+
+            <!-- Tidal Streaming Link -->
+            <div class="streaming-link">
+                <a href="https://tidal.com/album/466907477" target="_blank" rel="noopener noreferrer" class="tidal-link">
+                    <svg class="tidal-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.012 3.992L8.008 7.996 12.012 12l4.004-4.004L12.012 3.992zm0 7.996L8.008 15.992 12.012 20l4.004-4.008-4.004-4.004zm-8.004 0l-4.004 4.004L4.008 20l4.004-4.008-4.004-4.004zm16.008 0l-4.004 4.004L20.016 20 24 15.992l-3.984-4.004z"/>
+                    </svg>
+                    <span class="tidal-text">Stream on Tidal</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <h1 class="main-title">"Pray"</h1>
+            <p class="main-subtitle">An anthem for the heavy seasons. When the weight feels impossible to carry, this song reminds you that prayer is your power and peace is still possible. I hope it brings you the clarity and strength you're searching for.</p>
+
+            <!-- Coming Soon Section -->
+            <div class="coming-soon-section">
+                <h3 class="section-title">Coming Soon</h3>
+                <div class="coming-soon-grid">
+                    <div class="coming-soon-card" tabindex="0">
+                        <video src="assets/videos/the-source-loop.mp4"
+                               alt="The Source album cover"
+                               class="card-image card-video"
+                               loop
+                               muted
+                               playsinline
+                               preload="metadata"></video>
+                        <p class="card-title">The Source</p>
+                    </div>
+                    <div class="coming-soon-card" tabindex="0">
+                        <video src="assets/videos/c-walk-loop.mp4"
+                               alt="C-WALK album cover"
+                               class="card-image card-video"
+                               loop
+                               muted
+                               playsinline
+                               preload="metadata"></video>
+                        <p class="card-title">C-WALK</p>
+                    </div>
+                    <div class="coming-soon-card" tabindex="0">
+                        <video src="assets/videos/lit-loop.mp4"
+                               alt="LIT album cover"
+                               class="card-image card-video"
+                               loop
+                               muted
+                               playsinline
+                               preload="metadata"></video>
+                        <p class="card-title">LIT</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thank You & Discount Offer Section -->
+    <section class="thank-you-cta" id="thankYouSection" style="display: none;">
+        <div class="cta-container">
+            <div class="cta-left">
+                <a href="https://www.sayitwithyahchest.com/product/essential-heavyweight-cotton-t-shirt-7" target="_blank" rel="noopener noreferrer">
+                    <img
+                        src="assets/images/Pray T-Shirt.webp"
+                        alt="Pray Heavyweight Cotton T-Shirt"
+                        class="merch-image"
+                    />
+                </a>
+            </div>
+
+            <div class="cta-right">
+                <h2 class="cta-headline">A Gift For You 🙏</h2>
+
+                <p class="cta-message">
+                    Thank you so much for taking the time to listen and connect with the message of "Pray." Your support means the world.
+                </p>
+
+                <p class="cta-message">
+                    As a special thank you, here is an exclusive <strong>20% discount</strong> on all merchandise in the S.I.W.Y.C store, including the official "Pray" collection.
+                </p>
+
+                <div class="discount-code-box">
+                    <p class="code-label">Use code at checkout:</p>
+                    <div class="code-display" id="discountCode">PRAY20</div>
+                    <button class="copy-btn" id="copyCodeBtn">
+                        <span id="copyText">Copy Code</span>
+                    </button>
+                </div>
+
+                <a href="https://www.sayitwithyahchest.com" target="_blank" rel="noopener noreferrer" class="shop-btn">
+                    Shop the Collection
+                </a>
+
+                <p class="savings-note">
+                    Save $12 on the Pray T-Shirt (normally $60, now just $48!)
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Email Capture Modal -->
+    <div class="modal-overlay" id="emailModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Unlock the Music</h2>
+                <p>Share at least one contact method to start listening to "Pray" and receive updates from Myind Sound.</p>
+            </div>
+            <form id="emailCaptureForm" class="email-form">
+                <div class="form-group">
+                    <label for="nameInput" class="sr-only">Full name</label>
+                    <input
+                        type="text"
+                        id="nameInput"
+                        name="name"
+                        placeholder="Your name *"
+                        required
+                        aria-required="true"
+                        autocomplete="name"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="emailInput" class="sr-only">Email address</label>
+                    <input
+                        type="email"
+                        id="emailInput"
+                        name="email"
+                        placeholder="Email address (optional)"
+                        autocomplete="email"
+                    >
+                </div>
+                <div class="form-group phone-group">
+                    <label for="phoneInput" class="sr-only">Phone number</label>
+                    <select id="countryCode" name="country_code" class="country-code-select">
+                        <option value="+1" selected>🇺🇸 +1</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+86">🇨🇳 +86</option>
+                        <option value="+81">🇯🇵 +81</option>
+                        <option value="+49">🇩🇪 +49</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+39">🇮🇹 +39</option>
+                        <option value="+34">🇪🇸 +34</option>
+                        <option value="+55">🇧🇷 +55</option>
+                        <option value="+52">🇲🇽 +52</option>
+                        <option value="+61">🇦🇺 +61</option>
+                        <option value="+82">🇰🇷 +82</option>
+                        <option value="+7">🇷🇺 +7</option>
+                        <option value="+27">🇿🇦 +27</option>
+                        <option value="+234">🇳🇬 +234</option>
+                        <option value="+254">🇰🇪 +254</option>
+                    </select>
+                    <input
+                        type="tel"
+                        id="phoneInput"
+                        name="phone"
+                        placeholder="Phone number (optional)"
+                        autocomplete="tel"
+                        class="phone-input"
+                    >
+                </div>
+                <p class="contact-note">* You must provide at least an email address or phone number</p>
+                <div class="form-group checkbox-group">
+                    <label for="optInCheckbox" class="checkbox-label">
+                        <input
+                            type="checkbox"
+                            id="optInCheckbox"
+                            name="opt_in"
+                            required
+                            aria-required="true"
+                        >
+                        <span class="checkbox-text">I agree to receive updates, music releases, and promotional content from Myind Sound via the contact method(s) I provided. *</span>
+                    </label>
+                </div>
+                <button type="submit" class="submit-btn">Unlock the Music</button>
+                <p class="privacy-note">* Required. We respect your privacy and will never share your information. You can unsubscribe at any time.</p>
+            </form>
+            <div class="success-message" id="successMessage" style="display: none;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <h3>Welcome!</h3>
+                <p>You're all set. Enjoy the music!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="audioPlayer" preload="auto">
+        <source src="assets/audio/pray.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script src="js/player.js"></script>
+    <script src="js/email-capture.js"></script>
+    <script src="js/animations.js"></script>
+
+    <!-- Check if email captured and show Thank You section -->
+    <script>
+        window.addEventListener('load', () => {
+            const emailCaptured = localStorage.getItem('email_captured');
+            if (emailCaptured && window.emailCapture) {
+                // Show Thank You section if email was previously captured
+                setTimeout(() => {
+                    window.emailCapture.showThankYouSection();
+                }, 1000);
+            }
+        });
+
+        // TEMPORARY: Test function to preview Thank You section
+        // Remove this after testing
+        window.testThankYou = function() {
+            if (window.emailCapture) {
+                window.emailCapture.showThankYouSection();
+            }
+        };
+    </script>
+
+    <!-- Background Video Speed Control -->
+    <script>
+        // Set background video to play at half speed
+        document.addEventListener('DOMContentLoaded', () => {
+            const bgVideo = document.getElementById('bgVideo');
+            if (bgVideo) {
+                bgVideo.playbackRate = 0.5; // Half speed
+                console.log('Background video set to half speed');
+            }
+        });
+    </script>
+
+    <!-- Additional hover video handler -->
+    <script>
+        // Backup hover handler in case animations.js doesn't load properly
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Backup hover handler initialized');
+
+            const cards = document.querySelectorAll('.coming-soon-card');
+            console.log('Backup found', cards.length, 'cards');
+
+            cards.forEach((card, i) => {
+                const video = card.querySelector('video.card-video');
+                if (video) {
+                    console.log(`Backup: Card ${i} has video`);
+
+                    card.addEventListener('mouseenter', function() {
+                        console.log(`Backup: Mouse entered card ${i}`);
+                        video.play().then(() => {
+                            console.log(`Backup: Video ${i} is now playing`);
+                        }).catch(err => {
+                            console.error(`Backup: Video ${i} play error:`, err);
+                        });
+                    });
+
+                    card.addEventListener('mouseleave', function() {
+                        console.log(`Backup: Mouse left card ${i}`);
+                        video.pause();
+                        video.currentTime = 0;
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
