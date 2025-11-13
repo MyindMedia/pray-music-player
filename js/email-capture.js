@@ -118,7 +118,12 @@ class EmailCapture {
 
         try {
             // Format phone with country code if provided
-            const fullPhone = phone ? `${countryCode}${phone}` : '';
+            // Remove any leading + or country code from phone input
+            let fullPhone = '';
+            if (phone) {
+                let cleanPhone = phone.replace(/^\+?\d{1,3}/, '').replace(/\D/g, '');
+                fullPhone = `${countryCode}${cleanPhone}`;
+            }
 
             // Submit to Go High Level
             const success = await this.submitToBackend(name, email, fullPhone, optIn);
@@ -183,6 +188,7 @@ class EmailCapture {
 
             if (!response.ok) {
                 console.error('API Error:', data);
+                console.error('Error details:', JSON.stringify(data.details, null, 2));
                 throw new Error(data.error || 'Failed to create contact');
             }
 
