@@ -1,5 +1,5 @@
 // Netlify serverless function for GHL Private Integration
-const axios = require('axios');
+// Using native fetch instead of axios for Netlify compatibility
 
 exports.handler = async function(event, context) {
   // Only allow POST requests
@@ -62,40 +62,52 @@ exports.handler = async function(event, context) {
     });
 
     // Send to Go High Level using Private Integration
-    const response = await axios.post(
-      'https://services.leadconnectorhq.com/contacts/',
-      contactData,
-      {
-        headers: {
-          'Authorization': `Bearer ${GHL_PRIVATE_TOKEN}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28'
-        }
-      }
-    );
+    const response = await fetch('https://services.leadconnectorhq.com/contacts/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GHL_PRIVATE_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Version': '2021-07-28'
+      },
+      body: JSON.stringify(contactData)
+    });
 
-    console.log('✅ Contact created:', response.data.contact?.id);
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('❌ GHL API Error:', data);
+      return {
+        statusCode: response.status,
+        body: JSON.stringify({
+          success: false,
+          error: 'Failed to create contact',
+          details: data
+        })
+      };
+    }
+
+    console.log('✅ Contact created:', data.contact?.id);
 
     // Success!
     return {
       statusCode: 200,
       body: JSON.stringify({
         success: true,
-        contact: response.data,
+        contact: data,
         message: 'Contact created successfully',
-        contactId: response.data.contact?.id
+        contactId: data.contact?.id
       })
     };
 
   } catch (error) {
-    console.error('❌ Error creating contact:', error.response?.data || error.message);
+    console.error('❌ Error creating contact:', error.message);
 
     return {
       statusCode: 500,
       body: JSON.stringify({
         success: false,
         error: 'Failed to create contact',
-        details: error.response?.data || error.message
+        details: error.message
       })
     };
   }
