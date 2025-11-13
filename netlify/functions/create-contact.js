@@ -61,8 +61,8 @@ exports.handler = async function(event, context) {
       phone: phone || 'N/A'
     });
 
-    // Send to Go High Level using Private Integration
-    const response = await fetch('https://services.leadconnectorhq.com/contacts/', {
+    // First, try to create the contact
+    let response = await fetch('https://services.leadconnectorhq.com/contacts/', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${GHL_PRIVATE_TOKEN}`,
@@ -72,30 +72,85 @@ exports.handler = async function(event, context) {
       body: JSON.stringify(contactData)
     });
 
-    const data = await response.json();
+    let data = await response.json();
 
-    if (!response.ok) {
-      console.error('❌ GHL API Error:', data);
+    // If contact already exists (400 error), search for it and update instead
+    if (response.status === 400 && data.message && data.message.includes('already exists')) {
+      console.log('Contact exists, searching to update...');
+
+      // Search for existing contact by email or phone
+      const searchQuery = email || phone;
+      const searchResponse = await fetch(
+        `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&query=${encodeURIComponent(searchQuery)}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${GHL_PRIVATE_TOKEN}`,
+            'Version': '2021-07-28'
+          }
+        }
+      );
+
+      const searchData = await searchResponse.json();
+
+      if (searchData.contacts && searchData.contacts.length > 0) {
+        const existingContact = searchData.contacts[0];
+        console.log('Found existing contact:', existingContact.id);
+
+        // Update the existing contact
+        const updateResponse = await fetch(
+          `https://services.leadconnectorhq.com/contacts/${existingContact.id}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${GHL_PRIVATE_TOKEN}`,
+              'Content-Type': 'application/json',
+              'Version': '2021-07-28'
+            },
+            body: JSON.stringify(contactData)
+          }
+        );
+
+        data = await updateResponse.json();
+
+        if (updateResponse.ok) {
+          console.log('✅ Contact updated:', existingContact.id);
+          return {
+            statusCode: 200,
+            body: JSON.stringify({
+              success: true,
+              contact: data,
+              message: 'Contact updated successfully',
+              contactId: existingContact.id,
+              action: 'updated'
+            })
+          };
+        }
+      }
+    }
+
+    // If creation was successful
+    if (response.ok) {
+      console.log('✅ Contact created:', data.contact?.id);
       return {
-        statusCode: response.status,
+        statusCode: 200,
         body: JSON.stringify({
-          success: false,
-          error: 'Failed to create contact',
-          details: data
+          success: true,
+          contact: data,
+          message: 'Contact created successfully',
+          contactId: data.contact?.id,
+          action: 'created'
         })
       };
     }
 
-    console.log('✅ Contact created:', data.contact?.id);
-
-    // Success!
+    // If we got here, something else went wrong
+    console.error('❌ GHL API Error:', data);
     return {
-      statusCode: 200,
+      statusCode: response.status,
       body: JSON.stringify({
-        success: true,
-        contact: data,
-        message: 'Contact created successfully',
-        contactId: data.contact?.id
+        success: false,
+        error: 'Failed to create or update contact',
+        details: data
       })
     };
 
