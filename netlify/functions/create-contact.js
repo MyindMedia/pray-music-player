@@ -35,22 +35,16 @@ exports.handler = async function(event, context) {
     const GHL_PRIVATE_TOKEN = process.env.GHL_PRIVATE_TOKEN;
     const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 
-    // Determine tags based on what contact info was provided
+    // Determine tags based on user preference
     const tags = ['Pray Player Form'];
-    if (email) {
-      tags.push('Pray Player Form Email');
-    }
-    if (phone) {
-      tags.push('Pray Player Form SMS');
-    }
 
     if (preference === 'sms') {
-      tags.push('Prefer SMS');
+      tags.push('SMS');
       tags.push('SMS Opted In');
     } else if (preference === 'email') {
-      tags.push('Prefer Email');
+      tags.push('Email');
     } else if (preference === 'both') {
-      tags.push('Prefer Both');
+      tags.push('Both');
       tags.push('SMS Opted In');
     }
 
