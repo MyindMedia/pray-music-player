@@ -62,7 +62,9 @@ exports.handler = async function(event, context) {
     console.log('Creating contact in GHL (Private Integration):', {
       name: name,
       email: email || 'N/A',
-      phone: phone || 'N/A'
+      phone: phone || 'N/A',
+      tags: tags,
+      preference: preference
     });
 
     let response = await fetch('https://services.leadconnectorhq.com/contacts/', {
