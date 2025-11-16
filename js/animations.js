@@ -57,7 +57,6 @@ class AnimationController {
     }
 
     setupComingSoonCards() {
-        alert('setupComingSoonCards: Starting...');
         console.log('setupComingSoonCards: Starting...');
         const cards = document.querySelectorAll('.coming-soon-card');
         console.log(`Found ${cards.length} coming soon cards`);

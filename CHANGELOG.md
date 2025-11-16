@@ -76,3 +76,4 @@
   - Increased hover tilt angles (mobile: 18°, desktop: 28°) for a more dramatic card tilt effect
   - Reverted cross-fade smoothing: restored video fade to `opacity 0.6s ease-out` and removed poster fade at click (poster fades on peel completion)
   - Updated "The Source" card title to uppercase "THE SOURCE" for consistency with requested styling
+  - Removed blocking alert on page load from `setupComingSoonCards` to prevent modal interruption
