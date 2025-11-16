@@ -39,12 +39,12 @@ exports.handler = async function(event, context) {
     const tags = ['Pray Player Form'];
 
     if (preference === 'sms') {
-      tags.push('SMS');
+      tags.push('Pray SMS');
       tags.push('SMS Opted In');
     } else if (preference === 'email') {
-      tags.push('Email');
+      tags.push('Pray Email');
     } else if (preference === 'both') {
-      tags.push('Both');
+      tags.push('Pray Both');
       tags.push('SMS Opted In');
     }
 
