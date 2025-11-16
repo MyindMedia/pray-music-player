@@ -42,9 +42,18 @@ class EmailCapture {
     }
 
     checkEmailStatus() {
+        // Check multiple indicators that user already submitted
         const emailCaptured = localStorage.getItem('email_captured');
-        if (emailCaptured) {
-            // Email already captured, don't show modal
+        const hasContactId = localStorage.getItem('ms_contact_id');
+        const hasDeviceCookie = document.cookie.includes('ms_uid=');
+
+        if (emailCaptured || hasContactId || hasDeviceCookie) {
+            // User already captured, don't show modal
+            console.log('User already registered:', {
+                emailCaptured: !!emailCaptured,
+                hasContactId: !!hasContactId,
+                hasDeviceCookie: hasDeviceCookie
+            });
             return true;
         }
         return false;
