@@ -124,7 +124,10 @@ class EmailCapture {
             // Format phone with country code if provided
             let fullPhone = '';
             if (phone) {
-                let cleanPhone = phone.replace(/^\+?\d{1,3}/, '').replace(/\D/g, '');
+                // Remove all non-digit characters
+                let cleanPhone = phone.replace(/\D/g, '');
+                // Remove any existing country code prefix (1-3 digits at start)
+                cleanPhone = cleanPhone.replace(/^1?(\d{10})$/, '$1');
                 fullPhone = `${countryCode}${cleanPhone}`;
             }
 
