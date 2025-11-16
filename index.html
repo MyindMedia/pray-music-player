@@ -125,34 +125,67 @@
             <div class="coming-soon-section">
                 <h3 class="section-title">Coming Soon</h3>
                 <div class="coming-soon-grid">
-                    <div class="coming-soon-card" tabindex="0">
-                        <video src="assets/videos/the-source-loop.mp4"
-                               alt="The Source album cover"
-                               class="card-image card-video"
-                               loop
-                               muted
-                               playsinline
-                               preload="metadata"></video>
-                        <p class="card-title">The Source</p>
+                    <div class="coming-soon-card" tabindex="0" data-poster="assets/images/thesource-poster.png">
+                        <div class="card-media">
+                            <div class="poster-group" data-peel-hover="20" data-peel-active="70" data-peel-direction="269" data-lighting="0.09" data-shadow="0.05" data-rotate="0" data-sticker-width="300">
+                                <div class="poster-layer"></div>
+                                
+                            </div>
+                            <div class="plastic-top"></div>
+                            <div class="plastic-bottom"></div>
+                            <video src="assets/videos/the-source-loop.mp4"
+                                   poster="assets/images/thesource-poster.png"
+                                   alt="The Source album cover"
+                                   class="card-video"
+                                   loop
+                                   muted
+                                   playsinline
+                                   autoplay
+                                   webkit-playsinline
+                                   preload="metadata"></video>
+                        </div>
+                        <p class="card-title">THE SOURCE</p>
                     </div>
-                    <div class="coming-soon-card" tabindex="0">
-                        <video src="assets/videos/c-walk-loop.mp4"
-                               alt="C-WALK album cover"
-                               class="card-image card-video"
-                               loop
-                               muted
-                               playsinline
-                               preload="metadata"></video>
+                    <div class="coming-soon-card" tabindex="0" data-poster="assets/images/cwalk-poster.png">
+                        <div class="card-media">
+                            <div class="poster-group" data-peel-hover="20" data-peel-active="70" data-peel-direction="269" data-lighting="0.09" data-shadow="0.05" data-rotate="0" data-sticker-width="300">
+                                <div class="poster-layer"></div>
+                                
+                            </div>
+                            <div class="plastic-top"></div>
+                            <div class="plastic-bottom"></div>
+                            <video src="assets/videos/c-walk-loop.mp4"
+                                   poster="assets/images/cwalk-poster.png"
+                                   alt="C-WALK album cover"
+                                   class="card-video"
+                                   loop
+                                   muted
+                                   playsinline
+                                   autoplay
+                                   webkit-playsinline
+                                   preload="metadata"></video>
+                        </div>
                         <p class="card-title">C-WALK</p>
                     </div>
-                    <div class="coming-soon-card" tabindex="0">
-                        <video src="assets/videos/lit-loop.mp4"
-                               alt="LIT album cover"
-                               class="card-image card-video"
-                               loop
-                               muted
-                               playsinline
-                               preload="metadata"></video>
+                    <div class="coming-soon-card" tabindex="0" data-poster="assets/images/lit-poster.png">
+                        <div class="card-media">
+                            <div class="poster-group" data-peel-hover="20" data-peel-active="70" data-peel-direction="269" data-lighting="0.09" data-shadow="0.05" data-rotate="0" data-sticker-width="300">
+                                <div class="poster-layer"></div>
+                                
+                            </div>
+                            <div class="plastic-top"></div>
+                            <div class="plastic-bottom"></div>
+                            <video src="assets/videos/lit-loop.mp4"
+                                   poster="assets/images/lit-poster.png"
+                                   alt="LIT album cover"
+                                   class="card-video"
+                                   loop
+                                   muted
+                                   playsinline
+                                   autoplay
+                                   webkit-playsinline
+                                   preload="metadata"></video>
+                        </div>
                         <p class="card-title">LIT</p>
                     </div>
                 </div>
@@ -208,28 +241,18 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Unlock the Music</h2>
-                <p>Share at least one contact method to start listening to "Pray" and receive updates from Myind Sound.</p>
+                <p>Enter your email to start listening to "Pray". Add your phone if you want SMS updates.</p>
             </div>
             <form id="emailCaptureForm" class="email-form">
-                <div class="form-group">
-                    <label for="nameInput" class="sr-only">Full name</label>
-                    <input
-                        type="text"
-                        id="nameInput"
-                        name="name"
-                        placeholder="Your name *"
-                        required
-                        aria-required="true"
-                        autocomplete="name"
-                    >
-                </div>
                 <div class="form-group">
                     <label for="emailInput" class="sr-only">Email address</label>
                     <input
                         type="email"
                         id="emailInput"
                         name="email"
-                        placeholder="Email address (optional)"
+                        placeholder="Email address *"
+                        required
+                        aria-required="true"
                         autocomplete="email"
                     >
                 </div>
@@ -263,7 +286,16 @@
                         class="phone-input"
                     >
                 </div>
-                <p class="contact-note">* You must provide at least an email address or phone number</p>
+                <div class="form-group">
+                    <label for="commPref" class="sr-only">Communication Preference</label>
+                    <select id="commPref" name="comm_pref" class="country-code-select" required aria-required="true">
+                        <option value="" disabled selected>Select preference *</option>
+                        <option value="sms">SMS Only</option>
+                        <option value="email">Email Only</option>
+                        <option value="both">Both (Get exclusive content!)</option>
+                    </select>
+                </div>
+                <p class="contact-note">* Email is required. If you choose SMS, please add your phone number.</p>
                 <div class="form-group checkbox-group">
                     <label for="optInCheckbox" class="checkbox-label">
                         <input
@@ -296,16 +328,18 @@
         Your browser does not support the audio element.
     </audio>
 
+    <script src="js/StickerPeel.js?v=3"></script>
     <script src="js/player.js"></script>
     <script src="js/email-capture.js"></script>
-    <script src="js/animations.js"></script>
+    <script src="js/animations.js?v=3"></script>
 
     <!-- Check if email captured and show Thank You section -->
     <script>
         window.addEventListener('load', () => {
             const emailCaptured = localStorage.getItem('email_captured');
-            if (emailCaptured && window.emailCapture) {
-                // Show Thank You section if email was previously captured
+            const hasUidCookie = document.cookie.includes('ms_uid=');
+            const hasContactId = !!localStorage.getItem('ms_contact_id');
+            if ((emailCaptured || hasUidCookie || hasContactId) && window.emailCapture) {
                 setTimeout(() => {
                     window.emailCapture.showThankYouSection();
                 }, 1000);
@@ -335,29 +369,21 @@
 
     <!-- Additional hover video handler -->
     <script>
-        // Backup hover handler in case animations.js doesn't load properly
+        // Backup hover video handler in case animations.js doesn't load properly
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('Backup hover handler initialized');
 
             const cards = document.querySelectorAll('.coming-soon-card');
-            console.log('Backup found', cards.length, 'cards');
 
             cards.forEach((card, i) => {
                 const video = card.querySelector('video.card-video');
                 if (video) {
-                    console.log(`Backup: Card ${i} has video`);
-
                     card.addEventListener('mouseenter', function() {
-                        console.log(`Backup: Mouse entered card ${i}`);
-                        video.play().then(() => {
-                            console.log(`Backup: Video ${i} is now playing`);
-                        }).catch(err => {
+                        video.play().catch(err => {
                             console.error(`Backup: Video ${i} play error:`, err);
                         });
                     });
 
                     card.addEventListener('mouseleave', function() {
-                        console.log(`Backup: Mouse left card ${i}`);
                         video.pause();
                         video.currentTime = 0;
                     });

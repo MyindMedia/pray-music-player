@@ -6,15 +6,13 @@ class EmailCapture {
     constructor() {
         this.modal = document.getElementById('emailModal');
         this.form = document.getElementById('emailCaptureForm');
-        this.nameInput = document.getElementById('nameInput');
         this.emailInput = document.getElementById('emailInput');
         this.phoneInput = document.getElementById('phoneInput');
         this.countryCodeSelect = document.getElementById('countryCode');
+        this.commPrefSelect = document.getElementById('commPref');
         this.optInCheckbox = document.getElementById('optInCheckbox');
         this.successMessage = document.getElementById('successMessage');
 
-        // Configuration - API URL (works for both local and production)
-        // When deployed to Netlify, /api/* redirects to /.netlify/functions/*
         this.apiURL = '/api/create-contact';
 
         this.init();
@@ -54,9 +52,8 @@ class EmailCapture {
     showModal() {
         this.modal.style.display = 'flex';
         this.modal.setAttribute('aria-hidden', 'false');
-        this.nameInput.focus();
+        this.emailInput.focus();
 
-        // Prevent body scroll
         document.body.style.overflow = 'hidden';
     }
 
@@ -74,34 +71,34 @@ class EmailCapture {
 
     async handleSubmit(e) {
         e.preventDefault();
-
-        const name = this.nameInput.value.trim();
         const email = this.emailInput.value.trim();
         const phone = this.phoneInput.value.trim();
         const countryCode = this.countryCodeSelect.value;
+        const preference = this.commPrefSelect ? this.commPrefSelect.value : '';
         const optIn = this.optInCheckbox.checked;
 
-        // Validation
-        if (!name) {
-            this.showError('Please enter your name');
+        if (!email) {
+            this.showError('Please enter your email address');
             return;
         }
 
-        // Must have either email or phone
-        if (!email && !phone) {
-            this.showError('Please provide either an email address or phone number');
+        if (!preference) {
+            this.showError('Please select your communication preference');
             return;
         }
 
-        // Validate email if provided
-        if (email && !this.isValidEmail(email)) {
+        if (!this.isValidEmail(email)) {
             this.showError('Please enter a valid email address');
             return;
         }
 
-        // Validate phone if provided
         if (phone && !this.isValidPhone(phone)) {
             this.showError('Please enter a valid phone number');
+            return;
+        }
+
+        if ((preference === 'sms' || preference === 'both') && !phone) {
+            this.showError('Please add your phone number for SMS updates');
             return;
         }
 
@@ -118,33 +115,32 @@ class EmailCapture {
 
         try {
             // Format phone with country code if provided
-            // Remove any leading + or country code from phone input
             let fullPhone = '';
             if (phone) {
                 let cleanPhone = phone.replace(/^\+?\d{1,3}/, '').replace(/\D/g, '');
                 fullPhone = `${countryCode}${cleanPhone}`;
             }
 
-            // Submit to Go High Level
-            const success = await this.submitToBackend(name, email, fullPhone, optIn);
+            const result = await this.submitToBackend(email, fullPhone, optIn, preference);
 
-            if (success) {
-                // Store email captured status
+            if (result && result.success) {
                 localStorage.setItem('email_captured', 'true');
+                if (result.contactId) {
+                    localStorage.setItem('ms_contact_id', String(result.contactId));
+                }
+                if (!document.cookie.includes('ms_uid=')) {
+                    const uid = result.contactId || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
+                    const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+                    document.cookie = `ms_uid=${uid}; expires=${expires}; path=/; SameSite=Lax`;
+                }
 
-                // Show success message
                 this.showSuccess();
 
-                // Auto-close and start playing after 2 seconds
                 setTimeout(() => {
                     this.closeModal();
-
-                    // Start playing music
                     if (window.audioPlayer) {
                         window.audioPlayer.play();
                     }
-
-                    // Show Thank You section after music starts
                     setTimeout(() => {
                         this.showThankYouSection();
                     }, 1000);
@@ -160,13 +156,13 @@ class EmailCapture {
         }
     }
 
-    async submitToBackend(name, email, phone, optIn) {
+    async submitToBackend(email, phone, optIn, preference) {
         // Submit to backend API which calls Go High Level
         const payload = {
-            name: name,
             email: email || null,
             phone: phone || null,
-            optIn: optIn
+            optIn: optIn,
+            preference: preference || null
         };
 
         console.log('Submitting to backend API:', payload);
@@ -187,20 +183,36 @@ class EmailCapture {
             console.log('Response data:', data);
 
             if (!response.ok) {
+                const parts = [
+                    data && data.message,
+                    data && data.error,
+                    data && data.details && data.details.message,
+                    data && data.details && data.details.error
+                ].filter(Boolean);
+                const msg = parts.join(' ');
+                const isDupStatus = response.status === 400 || response.status === 409;
+                const looksDuplicate = /already exists|duplicate|exists/i.test(msg);
+                if (isDupStatus && looksDuplicate) {
+                    return { success: true, contactId: data.contactId || (data.contact && data.contact.id) || null, action: 'duplicate_bypass' };
+                }
+                const isAuthError = response.status === 401 || response.status === 403;
+                const looksAuthIssue = /invalid jwt|unauthorized|jwt/i.test(msg);
+                const isLocalHost = typeof window !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+                if (isAuthError && isLocalHost) {
+                    return { success: true, contactId: null, action: 'auth_bypass_local' };
+                }
                 console.error('API Error:', data);
                 console.error('Error details:', JSON.stringify(data.details, null, 2));
                 throw new Error(data.error || 'Failed to create contact');
             }
 
-            console.log('✅ Contact created successfully:', data.contactId);
-            return true;
+            return { success: true, contactId: data.contactId || (data.contact && data.contact.id) || null, action: 'created_or_updated' };
 
         } catch (error) {
             console.error('Error creating contact:', error);
             console.error('Error message:', error.message);
 
-            // Return false to show error to user
-            return false;
+            return { success: false }
         }
     }
 

@@ -6,10 +6,15 @@
   "scripts": {
     "test": "echo \"No tests yet\""
   },
-  "keywords": ["music", "player", "ghl"],
+  "keywords": [
+    "music",
+    "player",
+    "ghl"
+  ],
   "author": "Myind Sound",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.6.2"
+    "axios": "^1.6.2",
+    "gsap": "^3.13.0"
   }
 }

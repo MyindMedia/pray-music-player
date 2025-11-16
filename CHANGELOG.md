@@ -1,0 +1,78 @@
+# Changelog
+
+## 2025-11-15
+
+- Align all Coming Soon card layers to video size for pixel-perfect stacking
+  - Set `poster-layer`, `poster-group`, `plastic-top`, `plastic-bottom`, and peel container to match `card-media`/video dimensions
+  - Positioned layers absolutely at `top: 0; left: 0` to ensure perfect overlay
+  - Forced poster and plastic overlays to scale `100% 100%` to eliminate cropping/stretching mismatches
+  - Ensured video uses `object-fit: cover` and matches computed dimensions
+  - Established z-index order: video (base), plastic overlays (middle), peel overlay (top)
+  - Restored peel direction to left→right (`peelDirection: 269`) after vertical peel regression
+  - Anchored peel overlay inside `card-media` with `inset: 0` so its bottom aligns exactly with the poster image bottom
+  - Moved peel overlay to a separate container appended to the card and positioned over `card-media` with `overflow: visible` so the peel animation can extend beyond the media bounds while staying aligned at the bottom
+  - Shifted overlay container up by 15px to provide visual clearance for peel animation beyond the top edge while maintaining alignment with the poster
+  - Increased upward offset by an additional 10px (total 25px) for more peel clearance
+  - Shifted overlay container 5px to the right to fine-tune peel alignment
+  - Adjusted horizontal offset 3px to the left (net +2px from baseline)
+  - Hid the video until peel completes, then reveals it with a faster opacity transition
+  - Reduced peel sticker size to 90% of media width for a cleaner sticker look
+  - On click, forces peel animation to 100%, fades out and removes the overlay, then reveals the looping video
+  - On hover, only reveals a small edge (~8%); full peel plays on click to reveal the video
+  - Converted hover reveal to ~10px (computed per card height) and removed long click delay by animating peel immediately on initial click with dramatic easing
+  - Increased card hover tilt intensity and depth for a more dramatic effect
+  - Ensured poster images always render by forcing `display: block` and adding a fallback to the video `poster` attribute when the `data-poster` fails to load
+  - Made video reveal truly instant by removing the opacity transition and switching directly from `opacity: 0` to `opacity: 1`
+  - Adjusted overlay position 3px to the left for precise alignment
+  - Shifted overlay up by 2px for refined vertical alignment
+  - Shifted overlay up by an additional 1px and added a responsive layout recalculation using `ResizeObserver`/`resize` to keep all layers aligned and scaled on mobile
+  - Micro-adjusted overlay down by 0.6px using subpixel positioning for exact alignment
+  - Adjusted overlay position: moved down an additional 1px and left 1px for precise alignment
+  - Added dynamic 3D drop shadow that responds to tilt on hover for deeper depth perception
+  - Removed dynamic hover shadow from overlays and restricted shadow to the poster card only; ensured downward-only shadow with stronger intensity on hover
+  - Removed card border and increased poster card shadows for clearer, borderless depth
+  - Removed all poster card drop shadows (base and hover) and cleared poster-layer shadow for a cleaner look without visible borders
+  - Set poster-layer to exact fit (`inset: 0`) so the poster-group outer box matches the poster size precisely
+  - Smoothed hover tilt by throttling updates to animation frames and reducing rotation/depth for steadier motion
+  - Removed video layer shadow and background to eliminate visible edge from the video element
+  - Further improved tilt smoothness with lerp smoothing and adaptive angle based on viewport size; added `will-change: transform` on the media container
+  - Made peel-to-video reveal instant by removing overlay fade and immediate overlay removal
+  - Ensured video fits poster bounds exactly by relying on CSS `width:100%`/`height:100%`, removing JS pixel sizing and initial scale
+  - Forced transparent backgrounds on video, poster-layer, poster-group, and plastic overlay; ensured overlay container is transparent
+  - Removed all hover and base drop shadows from card and poster to prevent any background during tilt
+  - Added 1px overlap to the peel overlay container so it extends slightly beyond the poster edges for seamless coverage
+  - Added inset drop shadow to poster layer for depth without any background fill; slightly stronger on hover
+  - Removed poster-layer drop shadow (base and hover) for a completely shadowless poster
+  - Switched poster shadow to a bottom-centered radial glow (ellipse) under the image for a rounded, angled bottom effect; removed box-shadow edges
+  - Shifted overlay container an additional 1px to the right for precise alignment
+  - Increased bottom poster shadow spread and softness using a larger ellipse, stronger blur, and slight vertical scale
+  - Further increased bottom ellipse shadow size, blur, and opacity for deeper ground contact effect
+  - Reduced peel hover reveal amount by 20% for a subtler hover interaction
+  - Further reduced peel hover reveal to 50% of prior value for minimal exposure on hover
+  - Ensured shadow remains bottom-only and increased downward spread by enlarging the ellipse, adding slight negative bottom offset, and boosting blur/opacity
+  - Reverted bottom shadow to elliptical gradient without clipping for a smoother, natural spread
+  - Moved bottom shadow behind poster by rendering on `card-media::after` with low z-index; ensures shadow sits under the cover art
+  - Increased bottom shadow spread and softness (larger ellipse, stronger blur/opacity) while keeping it strictly below the poster
+  - Shaped bottom shadow into a wider oval (reduced height, increased width) with adjusted blur/opacity for a cleaner, rounded base look
+  - Constrained shadow to bottom only and removed side visibility via horizontal clip-path insets
+  - Made bottom shadow disappear instantly when the card is unwrapped so it matches poster reveal timing
+  - Changed post-peel behavior to cross-fade: poster fades out while video fades in for a smooth transition
+- Slowed video fade-in on click to 0.6s for a smoother reveal
+- Reverted bottom shadow angle/spread to previous settings (no skew), restoring earlier blur/opacity levels
+- Increased peel duration to ~1.6s with one-way animation from 3% to 100%; no mid-stop, overlay fades quickly after completion and video reveals
+- Separated hover and click behavior: hover reveals ~10px while click starts at 3% and animates to 100%
+- Fixed click behavior so full peel completes on single click by overriding :active styles with inline !important and disabling draggable pointer events during peel
+ - Reduced video window size by 10px on each side (set `inset: 11px`) to create a subtle inner margin within the poster bounds while maintaining exact alignment with the card-media container
+ - Removed rounded edges on the video window by setting `border-radius: 0` on `.card-video` and its container `.card-media` for a clean, square frame
+  - Further reduced video window size by 5px on each side (set `inset: 16px`) to tighten the inner margin while preserving alignment and responsiveness
+  - Shifted video upward by 5px using `transform: translateY(-5px)` to fine-tune vertical framing without changing the element’s box size
+  - Added 5px to the bottom of the video window (set `inset: 16px 16px 21px 16px`) to increase bottom margin while preserving top/left/right spacing
+  - Reduced the bottom of the video window by an additional 10px (set `inset: 16px 16px 31px 16px`) to further increase bottom spacing without affecting other sides
+  - Further reduced the video window by 5px on all sides (set `inset: 21px 21px 36px 21px`) to tighten framing uniformly while keeping increased bottom spacing
+  - Synced base CSS for `.card-video` to `inset: 21px 21px 36px 21px` so the smaller window is visible immediately without relying on JS execution or cache refresh
+  - Applied global upward shift of 5px in CSS (`transform: translateY(-5px)`) and updated hover transform to preserve the shift while scaling
+  - Shifted video window 10px to the left using `transform: translateX(-10px)` and updated base/hover transforms to keep consistent framing across interactions
+  - Further reduced the video window by 10px on all sides (set `inset: 31px 31px 46px 31px`) to uniformly tighten framing while preserving increased bottom spacing
+  - Increased hover tilt angles (mobile: 18°, desktop: 28°) for a more dramatic card tilt effect
+  - Reverted cross-fade smoothing: restored video fade to `opacity 0.6s ease-out` and removed poster fade at click (poster fades on peel completion)
+  - Updated "The Source" card title to uppercase "THE SOURCE" for consistency with requested styling

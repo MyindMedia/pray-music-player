@@ -11,48 +11,58 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    // Parse form data
-    const { name, email, phone, optIn } = JSON.parse(event.body);
+    const { name, email, phone, optIn, preference } = JSON.parse(event.body);
 
-    // Validate required fields
-    if (!name) {
+    if (!email) {
       return {
         statusCode: 400,
         body: JSON.stringify({
           success: false,
-          error: 'Name is required'
+          error: 'Email is required'
         })
       };
     }
 
-    if (!email && !phone) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          success: false,
-          error: 'Either email or phone is required'
-        })
-      };
+    let firstName;
+    let lastName;
+    if (name && typeof name === 'string' && name.trim().length > 0) {
+      const nameParts = name.trim().split(' ');
+      firstName = nameParts[0] || undefined;
+      lastName = nameParts.slice(1).join(' ') || undefined;
     }
-
-    // Split name into first and last
-    const nameParts = name.trim().split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
 
     // Your GHL Private Integration credentials (from environment variables)
     const GHL_PRIVATE_TOKEN = process.env.GHL_PRIVATE_TOKEN;
     const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 
+    // Determine tags based on what contact info was provided
+    const tags = ['Pray Player Form'];
+    if (email) {
+      tags.push('Pray Player Form Email');
+    }
+    if (phone) {
+      tags.push('Pray Player Form SMS');
+    }
+
+    if (preference === 'sms') {
+      tags.push('Prefer SMS');
+      tags.push('SMS Opted In');
+    } else if (preference === 'email') {
+      tags.push('Prefer Email');
+    } else if (preference === 'both') {
+      tags.push('Prefer Both');
+      tags.push('SMS Opted In');
+    }
+
     // Prepare contact data for GHL API v2.0
     const contactData = {
       locationId: GHL_LOCATION_ID,
       email: email || undefined,
-      firstName: firstName,
-      lastName: lastName,
+      firstName: firstName || undefined,
+      lastName: lastName || undefined,
       phone: phone || undefined,
       source: 'Music Player - Pray',
-      tags: ['Pray Player Form']
+      tags: tags
     };
 
     console.log('Creating contact in GHL (Private Integration):', {
@@ -61,7 +71,6 @@ exports.handler = async function(event, context) {
       phone: phone || 'N/A'
     });
 
-    // First, try to create the contact
     let response = await fetch('https://services.leadconnectorhq.com/contacts/', {
       method: 'POST',
       headers: {
@@ -74,8 +83,11 @@ exports.handler = async function(event, context) {
 
     let data = await response.json();
 
-    // If contact already exists (400 error), search for it and update instead
-    if (response.status === 400 && data.message && data.message.includes('already exists')) {
+    const isDupStatus = response.status === 400 || response.status === 409;
+    const msg = (data && (data.message || data.error)) || '';
+    const looksDuplicate = /already exists|duplicate|exists/i.test(msg);
+
+    if (isDupStatus && looksDuplicate) {
       console.log('Contact exists, searching to update...');
 
       // Search for existing contact by email or phone
@@ -126,6 +138,17 @@ exports.handler = async function(event, context) {
           };
         }
       }
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          success: true,
+          contact: null,
+          message: 'Duplicate detected, proceeding',
+          contactId: searchData.contacts && searchData.contacts[0] ? searchData.contacts[0].id : null,
+          action: 'duplicate_bypass'
+        })
+      };
     }
 
     // If creation was successful
@@ -143,13 +166,13 @@ exports.handler = async function(event, context) {
       };
     }
 
-    // If we got here, something else went wrong
     console.error('❌ GHL API Error:', data);
     return {
       statusCode: response.status,
       body: JSON.stringify({
         success: false,
         error: 'Failed to create or update contact',
+        message: data && (data.message || (data.details && data.details.message)) || undefined,
         details: data
       })
     };
@@ -162,6 +185,7 @@ exports.handler = async function(event, context) {
       body: JSON.stringify({
         success: false,
         error: 'Failed to create contact',
+        message: error && (error.message || undefined),
         details: error.message
       })
     };
