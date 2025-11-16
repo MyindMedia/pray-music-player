@@ -86,6 +86,9 @@ class AudioPlayer {
 
         // Add ripple effect to buttons
         this.addRippleEffect();
+
+        // Load initial track so play works on first click
+        this.loadTrack(this.currentTrackIndex);
     }
 
     togglePlay() {
@@ -97,6 +100,10 @@ class AudioPlayer {
     }
 
     play() {
+        if (!this.audio.src) {
+            this.loadTrack(this.currentTrackIndex);
+        }
+        if (window.msAudioBus) window.msAudioBus.stopAllExcept(this.audio);
         const playPromise = this.audio.play();
 
         if (playPromise !== undefined) {
@@ -136,12 +143,14 @@ class AudioPlayer {
         this.isPlaying = true;
         this.updatePlayButton();
         this.albumArt.classList.add('playing');
+        if (window.msAudioBus) window.msAudioBus.register(this.audio);
     }
 
     onPause() {
         this.isPlaying = false;
         this.updatePlayButton();
         this.albumArt.classList.remove('playing');
+        if (window.msAudioBus) window.msAudioBus.remove(this.audio);
     }
 
     previousTrack() {

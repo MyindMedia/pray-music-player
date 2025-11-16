@@ -326,10 +326,13 @@ class AnimationController {
                     video.style.transition = 'opacity 0.6s ease-out, transform 0.25s ease-out';
                     video.style.opacity = '1';
                     video.style.transform = 'none';
+                    if (window.msMediaBus) window.msMediaBus.stopAllExcept(video);
                     const playPromise = video.play();
                     if (playPromise && typeof playPromise.catch === 'function') {
                         playPromise.catch(() => {});
                     }
+                    video.addEventListener('play', () => { if (window.msMediaBus) window.msMediaBus.register(video); });
+                    video.addEventListener('pause', () => { if (window.msMediaBus) window.msMediaBus.remove(video); });
                     const playBtnReveal = card.querySelector('.card-play-btn');
                     if (playBtnReveal) {
                         playBtnReveal.style.display = 'inline-flex';
@@ -452,23 +455,26 @@ class AnimationController {
             });
 
             // Hover handlers for video playback
-                if (video) {
-                    video.muted = true;
-                    video.playsInline = true;
-                    video.loop = true;
-                    const mediaEl = card.querySelector('.card-media') || card;
-                    mediaEl.addEventListener('mouseenter', () => {
-                        if (card.classList.contains('unwrapped')) return;
-                        const playPromise = video.play();
-                        if (playPromise !== undefined) {
-                            playPromise.catch(() => {});
-                        }
-                    });
-                    mediaEl.addEventListener('mouseleave', () => {
-                        if (card.classList.contains('unwrapped')) return;
-                        // Keep video playing to ensure loop visibility; do not pause here
-                    });
-                }
+            if (video) {
+                video.muted = true;
+                video.playsInline = true;
+                video.loop = true;
+                const mediaEl = card.querySelector('.card-media') || card;
+                mediaEl.addEventListener('mouseenter', () => {
+                    if (card.classList.contains('unwrapped')) return;
+                    if (window.msMediaBus) window.msMediaBus.stopAllExcept(video);
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(() => {});
+                    }
+                    video.addEventListener('play', () => { if (window.msMediaBus) window.msMediaBus.register(video); }, { once: true });
+                    video.addEventListener('pause', () => { if (window.msMediaBus) window.msMediaBus.remove(video); }, { once: true });
+                });
+                mediaEl.addEventListener('mouseleave', () => {
+                    if (card.classList.contains('unwrapped')) return;
+                    try { video.pause(); } catch(e) {}
+                });
+            }
 
                 const audioSrc = card.getAttribute('data-audio-src');
                 const audioStartAttr = card.getAttribute('data-audio-start');
@@ -479,6 +485,10 @@ class AnimationController {
                     const mediaEl = card.querySelector('.card-media') || card;
                     const state = { audio: null, timeoutId: null, fadeIntervalId: null, playing: false };
                     card._hoverAudio = state;
+                    const playBtnEl = card.querySelector('.card-play-btn');
+                    state.playBtn = playBtnEl;
+                    const PLAY_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="card-play-icon"><path d="M8 5v14l11-7z"/></svg>';
+                    const PAUSE_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="card-play-icon"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>';
                     const ensureAudio = () => {
                         if (!state.audio) {
                             state.audio = new Audio(audioSrc);
@@ -502,6 +512,12 @@ class AnimationController {
                                 state.audio.pause();
                                 state.playing = false;
                                 state.audio.volume = 1;
+                                if (window.msAudioBus) window.msAudioBus.remove(state.audio);
+                                if (state.playBtn) {
+                                    state.playBtn.innerHTML = PLAY_SVG;
+                                    state.playBtn.setAttribute('aria-label', 'Play demo');
+                                    state.playBtn.classList.remove('is-playing');
+                                }
                             }
                         }, 100);
                     };
@@ -510,11 +526,17 @@ class AnimationController {
                         const begin = () => {
                             const start = Math.max(0, audioStart);
                             const end = start + Math.max(0, audioDuration);
-                            const onSeeked = () => {
-                                state.audio.removeEventListener('seeked', onSeeked);
+                        const onSeeked = () => {
+                            state.audio.removeEventListener('seeked', onSeeked);
                                 const p = state.audio.play();
                                 state.playing = true;
                                 if (p && typeof p.catch === 'function') p.catch(() => { state.playing = false; });
+                                if (window.msAudioBus && state.audio) window.msAudioBus.register(state.audio);
+                                if (state.playBtn) {
+                                    state.playBtn.innerHTML = PAUSE_SVG;
+                                    state.playBtn.setAttribute('aria-label', 'Pause demo');
+                                    state.playBtn.classList.add('is-playing');
+                                }
                                 const onTimeUpdate = () => {
                                     if (state.audio.currentTime >= end) {
                                         state.audio.removeEventListener('timeupdate', onTimeUpdate);
@@ -538,10 +560,17 @@ class AnimationController {
                     if (playBtn) {
                         playBtn.addEventListener('click', () => {
                             if (state.playing && state.audio) {
+                                if (state.fadeIntervalId) { clearInterval(state.fadeIntervalId); state.fadeIntervalId = null; }
+                                if (state.timeoutId) { clearTimeout(state.timeoutId); state.timeoutId = null; }
                                 try { state.audio.pause(); } catch(e) {}
                                 state.playing = false;
+                                if (window.msAudioBus) window.msAudioBus.remove(state.audio);
+                                playBtn.innerHTML = PLAY_SVG;
+                                playBtn.setAttribute('aria-label', 'Play demo');
+                                playBtn.classList.remove('is-playing');
+                            } else {
+                                startPlay();
                             }
-                            startPlay();
                         });
                     }
                 }
@@ -661,7 +690,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add stagger delays to coming soon cards
     const cards = document.querySelectorAll('.coming-soon-card');
     addStaggerDelay(cards, 0.1);
+
+    const vids = document.querySelectorAll('video.card-video');
+    vids.forEach(v => {
+        v.autoplay = false;
+        try { v.pause(); } catch(e) {}
+        v.addEventListener('play', () => { if (window.msMediaBus) window.msMediaBus.register(v); });
+        v.addEventListener('pause', () => { if (window.msMediaBus) window.msMediaBus.remove(v); });
+    });
 });
+
+if (!window.msAudioBus) {
+    window.msAudioBus = {
+        set: new Set(),
+        register(a) { if (a) this.set.add(a); },
+        remove(a) { if (a) this.set.delete(a); },
+        stopAllExcept(ex) { this.set.forEach(x => { if (x && x !== ex) { try { x.pause(); } catch(e) {} } }); },
+        stopAll() { this.stopAllExcept(null); }
+    };
+}
+
+if (!window.msMediaBus) {
+    window.msMediaBus = {
+        set: new Set(),
+        register(m) { if (m) this.set.add(m); },
+        remove(m) { if (m) this.set.delete(m); },
+        stopAllExcept(ex) { this.set.forEach(x => { if (x && x !== ex) { try { x.pause(); } catch(e) {} } }); },
+        stopAll() { this.stopAllExcept(null); }
+    };
+}
 
 if (typeof window.__msAudioUnlocked === 'undefined') {
     window.__msAudioUnlocked = (navigator.userActivation && navigator.userActivation.hasBeenActive) || false;
@@ -691,10 +748,15 @@ if ('requestIdleCallback' in window) {
 
 // Handle visibility change (pause audio when tab is hidden)
 document.addEventListener('visibilitychange', () => {
-    if (document.hidden && window.audioPlayer && window.audioPlayer.isPlaying) {
-        // Optionally pause when tab is hidden
-        // window.audioPlayer.pause();
+    if (document.hidden) {
+        if (window.msAudioBus) window.msAudioBus.stopAll();
+        if (window.msMediaBus) window.msMediaBus.stopAll();
     }
+});
+
+window.addEventListener('pagehide', () => {
+    if (window.msAudioBus) window.msAudioBus.stopAll();
+    if (window.msMediaBus) window.msMediaBus.stopAll();
 });
 
 // Performance monitoring (optional)

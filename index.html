@@ -140,7 +140,6 @@
                                    loop
                                    muted
                                    playsinline
-                                   autoplay
                                    webkit-playsinline
                                    preload="metadata"></video>
                         </div>
@@ -166,7 +165,6 @@
                                    loop
                                    muted
                                    playsinline
-                                   autoplay
                                    webkit-playsinline
                                    preload="metadata"></video>
                         </div>
@@ -192,7 +190,6 @@
                                    loop
                                    muted
                                    playsinline
-                                   autoplay
                                    webkit-playsinline
                                    preload="metadata"></video>
                         </div>
@@ -390,13 +387,14 @@
                 const video = card.querySelector('video.card-video');
                 if (video) {
                     card.addEventListener('mouseenter', function() {
+                        if (window.msMediaBus) window.msMediaBus.stopAllExcept(video);
                         video.play().catch(err => {
                             console.error(`Backup: Video ${i} play error:`, err);
                         });
                     });
 
                     card.addEventListener('mouseleave', function() {
-                        video.pause();
+                        try { video.pause(); } catch(e) {}
                         video.currentTime = 0;
                     });
                 }

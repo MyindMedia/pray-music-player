@@ -91,4 +91,10 @@
 - Play button now appears concurrently with video reveal on peel click, not after overlay fade
 - Added C-WALK demo: plays `Blood-Demo.mp3` from 15s for 20s via Play button that appears with video reveal
 - Improved demo seeking reliability: wait for `loadedmetadata` and `seeked` before playing clip at the correct start time
- - Added LIT demo: plays `Cook-Demo.mp3` from 1:42 (102s) for 20s via Play button appearing with video reveal
+- Added LIT demo: plays `Cook-Demo.mp3` from 1:42 (102s) for 20s via Play button appearing with video reveal
+- Enforced single-audio playback: starting any demo or main track pauses all others
+- All audio stops on `visibilitychange` hidden and `pagehide` (navigation/close) on desktop and mobile
+- Enforced single-video playback across Coming Soon cards: starting any card video pauses the rest; videos also stop on page hide/navigation
+- Disabled autoplay on card videos and pause all on load to prevent simultaneous playback before interactions
+- Play button toggles to Pause while demo audio is playing; clicking pauses immediately and returns to Play
+ - Fixed main Pray track not starting: player now loads initial track at startup and on first play if needed
