@@ -495,6 +495,7 @@ body {
     position: relative;
     overflow: visible;
     animation: none !important;
+    z-index: 1;
 }
 
 .coming-soon-card:hover,
@@ -502,11 +503,16 @@ body {
     transform: translateY(-8px) scale(1.02);
     box-shadow: none;
     background: rgba(42, 45, 58, 0.7);
+    z-index: 2000;
 }
 
 .coming-soon-card:focus-visible {
     outline: 2px solid var(--accent-gold);
     outline-offset: 4px;
+}
+
+.coming-soon-card.unwrapped {
+    z-index: 2000;
 }
 
 .card-image {
@@ -560,7 +566,7 @@ body {
     transform-style: preserve-3d;
     will-change: transform;
     transition: transform 0.15s ease;
-    z-index: 10;
+    z-index: 1000;
     background: transparent;
 }
 
@@ -722,6 +728,37 @@ body {
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary);
+}
+
+.card-play-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin: 8px auto 0;
+    background: rgba(42, 45, 58, 0.8);
+    border: none;
+    border-radius: 50%;
+    color: var(--text-primary);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.card-play-btn.visible {
+    opacity: 1;
+    transform: translateY(6px) scale(1);
+}
+
+.card-play-btn:hover {
+    background: rgba(42, 45, 58, 0.95);
+}
+
+.card-play-icon {
+    width: 20px;
+    height: 20px;
 }
 
 /* ===========================

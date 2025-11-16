@@ -77,3 +77,18 @@
   - Reverted cross-fade smoothing: restored video fade to `opacity 0.6s ease-out` and removed poster fade at click (poster fades on peel completion)
   - Updated "The Source" card title to uppercase "THE SOURCE" for consistency with requested styling
   - Removed blocking alert on page load from `setupComingSoonCards` to prevent modal interruption
+  - Ensured peel animation layers stay on top by raising overlay container (`z-index: 1000`) and `.poster-group` (`z-index: 1001`) via JS/CSS so they render above the video during hover and active peel
+  - Raised `.coming-soon-card` z-index on hover/focus and during peel (`z-index: 2000`) so the active card and its overlay render above adjacent cards
+- Overlay and peel layers fade out after animation: added `opacity` fade to peel `main` and `flap`, and parent overlay fades (`opacity 0.6s ease-in-out`) before cleanup
+ - Added hover audio for THE SOURCE: plays `Reflection-Demo.mp3` from 26s for 20s and fades out, replays only on re-hover
+- Configured `data-audio-src`, `data-audio-start`, `data-audio-duration` on THE SOURCE card and implemented handlers in `js/animations.js`
+- Hover audio respects browser autoplay policies: one click/touch unlocks audio; after unlock, hover plays automatically
+- Removed `<audio><source>` tag and rely on JS to set `src` to avoid devtools `net::ERR_ABORTED` warnings during track loading
+- Added toast prompt on hover if audio isn’t unlocked yet, and unlock via click/touch/keydown for smoother UX
+- Added "Play Demo" button under THE SOURCE card title to start 26s→46s clip on click
+- Removed hover-triggered audio; playback now starts only via the Play button with an SVG icon
+- Updated THE SOURCE demo playback to start at 26s and end at 48s using precise `timeupdate` monitoring; set `data-audio-duration="22"`
+- Play button now appears concurrently with video reveal on peel click, not after overlay fade
+- Added C-WALK demo: plays `Blood-Demo.mp3` from 15s for 20s via Play button that appears with video reveal
+- Improved demo seeking reliability: wait for `loadedmetadata` and `seeked` before playing clip at the correct start time
+ - Added LIT demo: plays `Cook-Demo.mp3` from 1:42 (102s) for 20s via Play button appearing with video reveal

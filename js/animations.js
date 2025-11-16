@@ -185,7 +185,7 @@ class AnimationController {
                     overlayContainer.style.position = 'absolute';
                     overlayContainer.style.left = (Math.round(mediaRect.left - cardRect.left - 2 - overlapPx) + 1.5) + 'px';
                     overlayContainer.style.top = (mediaRect.top - cardRect.top - 26.4 - overlapPx) + 'px';
-                    overlayContainer.style.zIndex = '50';
+                    overlayContainer.style.zIndex = '1000';
                     overlayContainer.style.pointerEvents = 'none';
                     overlayContainer.style.willChange = 'transform';
                     overlayContainer.style.transform = 'none';
@@ -234,7 +234,7 @@ class AnimationController {
                     video.style.zIndex = '1';
                     if (plasticTop) plasticTop.style.zIndex = '2';
                     if (plasticBottom) plasticBottom.style.zIndex = '2';
-                    posterGroup.style.zIndex = '3';
+                    posterGroup.style.zIndex = '1001';
                     
                     // Create simple StickerPeel instance with exact dimensions
                     const stickerPeel = new StickerPeel({
@@ -330,14 +330,35 @@ class AnimationController {
                     if (playPromise && typeof playPromise.catch === 'function') {
                         playPromise.catch(() => {});
                     }
+                    const playBtnReveal = card.querySelector('.card-play-btn');
+                    if (playBtnReveal) {
+                        playBtnReveal.style.display = 'inline-flex';
+                        void playBtnReveal.offsetWidth;
+                        playBtnReveal.classList.add('visible');
+                    }
                 }
 
                 const onPeelComplete = () => {
                     if (overlay) {
-                        overlay.style.transition = 'none';
+                        const cleanupOverlay = () => {
+                            if (sticker && typeof sticker.destroy === 'function') sticker.destroy();
+                            if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                            overlay.removeEventListener('transitionend', cleanupOverlay);
+                        };
+                        if (main) {
+                            main.style.transition = (main.style.transition ? main.style.transition + ', ' : '') + 'opacity 0.4s ease-out';
+                            main.style.opacity = '0';
+                        }
+                        if (flap) {
+                            flap.style.transition = (flap.style.transition ? flap.style.transition + ', ' : '') + 'opacity 0.4s ease-out';
+                            flap.style.opacity = '0';
+                        }
+                        overlay.style.willChange = 'opacity';
+                        overlay.style.transition = 'opacity 0.6s ease-in-out';
+                        overlay.style.opacity = '1';
+                        void overlay.getBoundingClientRect();
                         overlay.style.opacity = '0';
-                        if (sticker && typeof sticker.destroy === 'function') sticker.destroy();
-                        if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                        overlay.addEventListener('transitionend', cleanupOverlay);
                     }
                     if (posterLayer) {
                         posterLayer.style.transition = 'opacity 0.6s ease-in-out, clip-path 0.6s ease-in-out';
@@ -346,6 +367,10 @@ class AnimationController {
                         void posterLayer.getBoundingClientRect();
                         posterLayer.style.clipPath = 'inset(12% 12% 12% 12%)';
                         posterLayer.style.opacity = '0';
+                    }
+                    const playBtn = card.querySelector('.card-play-btn');
+                    if (playBtn) {
+                        playBtn.classList.add('visible');
                     }
                     
                     if (main) main.removeEventListener('transitionend', onPeelComplete);
@@ -427,23 +452,99 @@ class AnimationController {
             });
 
             // Hover handlers for video playback
-            if (video) {
-                video.muted = true;
-                video.playsInline = true;
-                video.loop = true;
-                const mediaEl = card.querySelector('.card-media') || card;
-                mediaEl.addEventListener('mouseenter', () => {
-                    if (card.classList.contains('unwrapped')) return;
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(() => {});
+                if (video) {
+                    video.muted = true;
+                    video.playsInline = true;
+                    video.loop = true;
+                    const mediaEl = card.querySelector('.card-media') || card;
+                    mediaEl.addEventListener('mouseenter', () => {
+                        if (card.classList.contains('unwrapped')) return;
+                        const playPromise = video.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(() => {});
+                        }
+                    });
+                    mediaEl.addEventListener('mouseleave', () => {
+                        if (card.classList.contains('unwrapped')) return;
+                        // Keep video playing to ensure loop visibility; do not pause here
+                    });
+                }
+
+                const audioSrc = card.getAttribute('data-audio-src');
+                const audioStartAttr = card.getAttribute('data-audio-start');
+                const audioDurationAttr = card.getAttribute('data-audio-duration');
+                const audioStart = audioStartAttr ? parseFloat(audioStartAttr) : 0;
+                const audioDuration = audioDurationAttr ? parseFloat(audioDurationAttr) : 0;
+                if (audioSrc && audioDuration > 0) {
+                    const mediaEl = card.querySelector('.card-media') || card;
+                    const state = { audio: null, timeoutId: null, fadeIntervalId: null, playing: false };
+                    card._hoverAudio = state;
+                    const ensureAudio = () => {
+                        if (!state.audio) {
+                            state.audio = new Audio(audioSrc);
+                            state.audio.preload = 'auto';
+                            state.audio.crossOrigin = 'anonymous';
+                        } else {
+                            state.audio.src = audioSrc;
+                        }
+                        state.audio.volume = 1;
+                    };
+                    const fadeOutAndStop = () => {
+                        if (!state.audio) return;
+                        if (state.fadeIntervalId) clearInterval(state.fadeIntervalId);
+                        const step = 0.05;
+                        state.fadeIntervalId = setInterval(() => {
+                            const v = Math.max(0, state.audio.volume - step);
+                            state.audio.volume = v;
+                            if (v <= 0) {
+                                clearInterval(state.fadeIntervalId);
+                                state.fadeIntervalId = null;
+                                state.audio.pause();
+                                state.playing = false;
+                                state.audio.volume = 1;
+                            }
+                        }, 100);
+                    };
+                    const startPlay = () => {
+                        ensureAudio();
+                        const begin = () => {
+                            const start = Math.max(0, audioStart);
+                            const end = start + Math.max(0, audioDuration);
+                            const onSeeked = () => {
+                                state.audio.removeEventListener('seeked', onSeeked);
+                                const p = state.audio.play();
+                                state.playing = true;
+                                if (p && typeof p.catch === 'function') p.catch(() => { state.playing = false; });
+                                const onTimeUpdate = () => {
+                                    if (state.audio.currentTime >= end) {
+                                        state.audio.removeEventListener('timeupdate', onTimeUpdate);
+                                        fadeOutAndStop();
+                                    }
+                                };
+                                state.audio.addEventListener('timeupdate', onTimeUpdate);
+                                if (state.timeoutId) { clearTimeout(state.timeoutId); state.timeoutId = null; }
+                            };
+                            state.audio.addEventListener('seeked', onSeeked, { once: true });
+                            try { state.audio.currentTime = start; } catch(e) { setTimeout(() => { try { state.audio.currentTime = start; } catch(_) {} }, 50); }
+                        };
+                        if (!isFinite(state.audio.duration) || state.audio.duration === 0) {
+                            state.audio.addEventListener('loadedmetadata', begin, { once: true });
+                            state.audio.load();
+                        } else {
+                            begin();
+                        }
+                    };
+                    const playBtn = card.querySelector('.card-play-btn');
+                    if (playBtn) {
+                        playBtn.addEventListener('click', () => {
+                            if (state.playing && state.audio) {
+                                try { state.audio.pause(); } catch(e) {}
+                                state.playing = false;
+                            }
+                            startPlay();
+                        });
                     }
-                });
-                mediaEl.addEventListener('mouseleave', () => {
-                    if (card.classList.contains('unwrapped')) return;
-                    // Keep video playing to ensure loop visibility; do not pause here
-                });
-            }
+                }
         });
 
         // Drag handle disabled: autoplay only after poster click
@@ -561,6 +662,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const cards = document.querySelectorAll('.coming-soon-card');
     addStaggerDelay(cards, 0.1);
 });
+
+if (typeof window.__msAudioUnlocked === 'undefined') {
+    window.__msAudioUnlocked = (navigator.userActivation && navigator.userActivation.hasBeenActive) || false;
+    const unlock = () => { window.__msAudioUnlocked = true; };
+    document.addEventListener('click', unlock, { once: true });
+    document.addEventListener('touchstart', unlock, { once: true });
+    document.addEventListener('keydown', unlock, { once: true });
+}
 
 // Preload images for better performance
 function preloadImages() {
