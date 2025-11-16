@@ -6,6 +6,7 @@ class EmailCapture {
     constructor() {
         this.modal = document.getElementById('emailModal');
         this.form = document.getElementById('emailCaptureForm');
+        this.nameInput = document.getElementById('nameInput');
         this.emailInput = document.getElementById('emailInput');
         this.phoneInput = document.getElementById('phoneInput');
         this.countryCodeSelect = document.getElementById('countryCode');
@@ -71,11 +72,17 @@ class EmailCapture {
 
     async handleSubmit(e) {
         e.preventDefault();
+        const name = this.nameInput.value.trim();
         const email = this.emailInput.value.trim();
         const phone = this.phoneInput.value.trim();
         const countryCode = this.countryCodeSelect.value;
         const preference = this.commPrefSelect ? this.commPrefSelect.value : '';
         const optIn = this.optInCheckbox.checked;
+
+        if (!name) {
+            this.showError('Please enter your name');
+            return;
+        }
 
         if (!email) {
             this.showError('Please enter your email address');
@@ -121,7 +128,7 @@ class EmailCapture {
                 fullPhone = `${countryCode}${cleanPhone}`;
             }
 
-            const result = await this.submitToBackend(email, fullPhone, optIn, preference);
+            const result = await this.submitToBackend(name, email, fullPhone, optIn, preference);
 
             if (result && result.success) {
                 localStorage.setItem('email_captured', 'true');
@@ -156,9 +163,10 @@ class EmailCapture {
         }
     }
 
-    async submitToBackend(email, phone, optIn, preference) {
+    async submitToBackend(name, email, phone, optIn, preference) {
         // Submit to backend API which calls Go High Level
         const payload = {
+            name: name || null,
             email: email || null,
             phone: phone || null,
             optIn: optIn,

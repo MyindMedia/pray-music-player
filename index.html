@@ -253,9 +253,21 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Unlock the Music</h2>
-                <p>Enter your email to start listening to "Pray". Add your phone if you want SMS updates.</p>
+                <p>Enter your info to start listening to "Pray". Add your phone if you want SMS updates.</p>
             </div>
             <form id="emailCaptureForm" class="email-form">
+                <div class="form-group">
+                    <label for="nameInput" class="sr-only">Full name</label>
+                    <input
+                        type="text"
+                        id="nameInput"
+                        name="name"
+                        placeholder="Your name *"
+                        required
+                        aria-required="true"
+                        autocomplete="name"
+                    >
+                </div>
                 <div class="form-group">
                     <label for="emailInput" class="sr-only">Email address</label>
                     <input
