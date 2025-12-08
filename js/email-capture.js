@@ -14,7 +14,9 @@ class EmailCapture {
         this.optInCheckbox = document.getElementById('optInCheckbox');
         this.successMessage = document.getElementById('successMessage');
 
-        this.apiURL = '/api/create-contact';
+        const isLocal = typeof window !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+        this.apiURL = isLocal ? 'http://localhost:3001/api/create-contact' : '/api/create-contact';
+        this.prayerApiURL = isLocal ? 'http://localhost:3001/api/opt-in-prayer' : '/api/opt-in-prayer';
 
         this.init();
     }
@@ -162,6 +164,9 @@ class EmailCapture {
                     }
                     setTimeout(() => {
                         this.showThankYouSection();
+
+                        // Show prayer CTA popup 10 seconds after email opt-in completion
+                        this.showPrayerCtaAfterEmailOptIn();
                     }, 1000);
                 }, 2000);
             } else {
@@ -305,6 +310,8 @@ class EmailCapture {
 
             // Initialize copy button functionality
             this.initCopyButton();
+
+            this.initPrayerJourney();
         }
     }
 
@@ -343,6 +350,263 @@ class EmailCapture {
         const emailCapture = window.emailCapture;
         if (emailCapture && !emailCapture.checkEmailStatus()) {
             emailCapture.showModal();
+        }
+    }
+
+    initPrayerJourney() {
+        const optInEl = document.getElementById('prayerOptIn');
+        const phoneGroup = document.getElementById('prayerPhoneGroup');
+        const phoneInput = document.getElementById('prayerPhone');
+        const countryCodeSelect = document.getElementById('prayerCountryCode');
+        const form = document.getElementById('prayerJourneyForm');
+
+        if (!form) return;
+
+        if (optInEl) {
+            optInEl.addEventListener('change', () => {
+                if (optInEl.checked) {
+                    phoneGroup.style.display = 'flex';
+                    if (phoneInput) phoneInput.required = true;
+                } else {
+                    phoneGroup.style.display = 'none';
+                    if (phoneInput) phoneInput.required = false;
+                }
+            });
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const optedIn = optInEl ? optInEl.checked : false;
+            const rawPhone = phoneInput ? phoneInput.value.trim() : '';
+            const countryCode = countryCodeSelect ? countryCodeSelect.value : '+1';
+
+            if (!optedIn) {
+                alert('Please confirm opt-in to receive daily prayers.');
+                return;
+            }
+
+            if (!rawPhone) {
+                alert('Please enter your phone number.');
+                return;
+            }
+
+            let cleanPhone = rawPhone.replace(/\D/g, '');
+            cleanPhone = cleanPhone.replace(/^1?(\d{10})$/, '$1');
+            const fullPhone = `${countryCode}${cleanPhone}`;
+
+            const submitBtn = form.querySelector('.submit-btn');
+            const originalText = submitBtn ? submitBtn.textContent : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+            }
+
+            try {
+                const contactId = localStorage.getItem('ms_contact_id');
+                const payload = {
+                    phone: fullPhone,
+                    contactId: contactId || null
+                };
+
+                const response = await fetch(this.prayerApiURL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data && (data.error || data.message) || 'Submission failed');
+                }
+
+                // Mark as opted in so CTA doesn't show again
+                localStorage.setItem('prayer_journey_opted_in', 'true');
+
+                // Show the prayer confirmation modal
+                this.showPrayerConfirmationModal();
+
+                // Reset form after 3 seconds
+                setTimeout(() => {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText || 'Start My Journey';
+                    }
+                    form.reset();
+                    if (phoneGroup) phoneGroup.style.display = 'none';
+                }, 3000);
+
+            } catch (err) {
+                console.error('Prayer opt-in submission error:', err);
+                alert('Could not submit. Please try again later.');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText || 'Start My Journey';
+                }
+            }
+        });
+    }
+
+    showPrayerConfirmationModal() {
+        const modal = document.getElementById('prayerConfirmationModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+
+            // Auto-hide after 4 seconds
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }, 4000);
+        }
+    }
+
+    showPrayerCtaAfterEmailOptIn() {
+        // Check if user has already opted in or dismissed the popup
+        const hasOptedIn = localStorage.getItem('prayer_journey_opted_in');
+        const hasDismissed = localStorage.getItem('prayer_cta_dismissed');
+
+        console.log('Prayer CTA Check:', {
+            hasOptedIn,
+            hasDismissed,
+            willShow: !hasOptedIn && !hasDismissed
+        });
+
+        if (hasOptedIn || hasDismissed) {
+            console.log('Prayer CTA blocked - user already opted in or dismissed');
+            return;
+        }
+
+        console.log('Prayer CTA will show in 10 seconds...');
+
+        // Show popup 10 seconds after email opt-in
+        setTimeout(() => {
+            console.log('Triggering prayer CTA popup now');
+            this.initPrayerCtaPopup();
+        }, 10000);
+    }
+
+    initPrayerCtaPopup() {
+        const popup = document.getElementById('prayerCtaPopup');
+        const closeBtn = document.getElementById('prayerCtaClose');
+        const ctaButton = document.getElementById('prayerCtaButton');
+
+        console.log('initPrayerCtaPopup called', { popup: !!popup });
+
+        if (!popup) {
+            console.error('Prayer CTA popup element not found!');
+            return;
+        }
+
+        // Check if user has already opted in or dismissed the popup
+        const hasOptedIn = localStorage.getItem('prayer_journey_opted_in');
+        const hasDismissed = localStorage.getItem('prayer_cta_dismissed');
+
+        if (hasOptedIn || hasDismissed) {
+            console.log('initPrayerCtaPopup blocked - already opted in or dismissed');
+            return;
+        }
+
+        console.log('Showing prayer CTA popup!');
+
+        // Show the popup
+        popup.style.display = 'block';
+        popup.classList.add('scroll-visible');
+
+        // Setup scroll-based hide/show behavior
+        let lastScrollY = window.scrollY;
+        const thankYouSection = document.getElementById('thankYouSection');
+
+        const handleScroll = () => {
+            if (!thankYouSection) return;
+
+            const currentScrollY = window.scrollY;
+            const thankYouTop = thankYouSection.offsetTop;
+            const windowHeight = window.innerHeight;
+
+            // Calculate how close we are to the Thank You section
+            // Start hiding when we're 400px away from the section
+            const distanceToThankYou = thankYouTop - currentScrollY - windowHeight;
+
+            if (distanceToThankYou < 400 && currentScrollY > lastScrollY) {
+                // Scrolling down and approaching Thank You section - hide popup
+                popup.classList.remove('scroll-visible');
+                popup.classList.add('scroll-hidden');
+            } else if (distanceToThankYou >= 400 || currentScrollY < lastScrollY) {
+                // Scrolling up or far from Thank You section - show popup
+                popup.classList.remove('scroll-hidden');
+                popup.classList.add('scroll-visible');
+            }
+
+            lastScrollY = currentScrollY;
+        };
+
+        window.addEventListener('scroll', handleScroll);
+
+        // Close button handler
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.removeEventListener('scroll', handleScroll);
+                this.closePrayerCta();
+            });
+        }
+
+        // CTA button handler - scroll to prayer journey form
+        if (ctaButton) {
+            ctaButton.addEventListener('click', () => {
+                window.removeEventListener('scroll', handleScroll);
+                this.closePrayerCta();
+
+                // First, make sure Thank You section is visible
+                if (thankYouSection && thankYouSection.style.display === 'none') {
+                    this.showThankYouSection();
+                }
+
+                // Scroll directly to the prayer journey form section
+                setTimeout(() => {
+                    const prayerSection = document.querySelector('.prayer-journey-cta');
+                    if (prayerSection) {
+                        // On mobile, scroll to center the section better
+                        const isMobile = window.innerWidth <= 768;
+                        prayerSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: isMobile ? 'center' : 'start'
+                        });
+
+                        // Auto-check the opt-in checkbox after scrolling
+                        setTimeout(() => {
+                            const optInCheckbox = document.getElementById('prayerOptIn');
+                            if (optInCheckbox && !optInCheckbox.checked) {
+                                optInCheckbox.click();
+                            }
+
+                            // On mobile, also focus the phone input to bring up keyboard
+                            if (isMobile) {
+                                const phoneInput = document.getElementById('prayerPhone');
+                                if (phoneInput && phoneInput.offsetParent !== null) {
+                                    phoneInput.focus();
+                                }
+                            }
+                        }, 800);
+                    }
+                }, 100);
+            });
+        }
+    }
+
+    closePrayerCta() {
+        const popup = document.getElementById('prayerCtaPopup');
+        if (popup) {
+            popup.classList.add('hiding');
+            setTimeout(() => {
+                popup.style.display = 'none';
+                popup.classList.remove('hiding');
+            }, 400);
+
+            // Mark as dismissed
+            localStorage.setItem('prayer_cta_dismissed', 'true');
         }
     }
 }

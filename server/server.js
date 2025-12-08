@@ -91,6 +91,65 @@ app.post('/api/create-contact', async (req, res) => {
     }
 });
 
+// Prayer journey opt-in endpoint
+app.post('/api/opt-in-prayer', async (req, res) => {
+    try {
+        const { phone, contactId } = req.body;
+
+        if (!phone) {
+            return res.status(400).json({ success: false, error: 'Phone is required' });
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${process.env.GHL_PRIVATE_TOKEN}`,
+            'Version': '2021-07-28',
+            'Content-Type': 'application/json'
+        };
+
+        let finalContactId = contactId || null;
+
+        if (!finalContactId) {
+            const searchResp = await axios.get('https://services.leadconnectorhq.com/contacts/', {
+                headers: {
+                    'Authorization': headers['Authorization'],
+                    'Version': headers['Version']
+                },
+                params: {
+                    locationId: process.env.GHL_LOCATION_ID,
+                    query: phone
+                }
+            });
+            const contacts = searchResp.data && searchResp.data.contacts ? searchResp.data.contacts : [];
+            if (contacts.length > 0) finalContactId = contacts[0].id;
+        }
+
+        const tags = ['30-Day Prayer Subscriber'];
+
+        if (finalContactId) {
+            const updatePayload = {
+                locationId: process.env.GHL_LOCATION_ID,
+                phone: phone,
+                tags: tags
+            };
+            const updateResp = await axios.put(`https://services.leadconnectorhq.com/contacts/${finalContactId}`, updatePayload, { headers });
+            return res.json({ success: true, message: 'Prayer journey opt-in saved', contactId: finalContactId, action: 'updated' });
+        }
+
+        const createPayload = {
+            locationId: process.env.GHL_LOCATION_ID,
+            phone: phone,
+            source: 'Music Player - Pray',
+            tags: tags
+        };
+        const createResp = await axios.post('https://services.leadconnectorhq.com/contacts/', createPayload, { headers });
+        return res.json({ success: true, message: 'Prayer journey opt-in created', contactId: createResp.data.contact?.id || null, action: 'created' });
+
+    } catch (error) {
+        console.error('❌ Prayer opt-in error:', error.response?.data || error.message);
+        res.status(500).json({ success: false, error: 'Failed to save prayer opt-in', details: error.response?.data || error.message });
+    }
+});
+
 // Start server
 app.listen(PORT, () => {
     console.log(`

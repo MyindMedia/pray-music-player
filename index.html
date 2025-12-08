@@ -141,7 +141,7 @@
                                    muted
                                    playsinline
                                    webkit-playsinline
-                                   preload="metadata"></video>
+                                   preload="none"></video>
                         </div>
                         <p class="card-title">THE SOURCE</p>
                         <button class="card-play-btn" type="button" aria-label="Play demo" style="display: none;">
@@ -166,7 +166,7 @@
                                    muted
                                    playsinline
                                    webkit-playsinline
-                                   preload="metadata"></video>
+                                   preload="none"></video>
                         </div>
                         <p class="card-title">C-WALK</p>
                         <button class="card-play-btn" type="button" aria-label="Play demo" style="display: none;">
@@ -191,7 +191,7 @@
                                    muted
                                    playsinline
                                    webkit-playsinline
-                                   preload="metadata"></video>
+                                   preload="none"></video>
                         </div>
                         <p class="card-title">LIT</p>
                         <button class="card-play-btn" type="button" aria-label="Play demo" style="display: none;">
@@ -237,6 +237,45 @@
                     </button>
                 </div>
 
+                <div class="prayer-journey-cta">
+                    <h3 class="cta-headline">Start Your Day with Prayer</h3>
+                    <p class="cta-message">Join thousands who receive daily prayers, scripture, and encouragement every morning at 7am.</p>
+
+                    <form id="prayerJourneyForm" class="email-form">
+                        <div class="form-group checkbox-group">
+                            <label for="prayerOptIn" class="checkbox-label">
+                                <input type="checkbox" id="prayerOptIn" name="prayer_opt_in">
+                                <span class="checkbox-text">Yes, send me daily prayers for 30 days</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group phone-group" id="prayerPhoneGroup" style="display: none;">
+                            <select id="prayerCountryCode" name="country_code" class="country-code-select">
+                                <option value="+1" selected>🇺🇸 +1</option>
+                                <option value="+44">🇬🇧 +44</option>
+                                <option value="+91">🇮🇳 +91</option>
+                                <option value="+86">🇨🇳 +86</option>
+                                <option value="+81">🇯🇵 +81</option>
+                                <option value="+49">🇩🇪 +49</option>
+                                <option value="+33">🇫🇷 +33</option>
+                                <option value="+39">🇮🇹 +39</option>
+                                <option value="+34">🇪🇸 +34</option>
+                                <option value="+55">🇧🇷 +55</option>
+                                <option value="+52">🇲🇽 +52</option>
+                                <option value="+61">🇦🇺 +61</option>
+                                <option value="+82">🇰🇷 +82</option>
+                                <option value="+7">🇷🇺 +7</option>
+                                <option value="+27">🇿🇦 +27</option>
+                                <option value="+234">🇳🇬 +234</option>
+                                <option value="+254">🇰🇪 +254</option>
+                            </select>
+                            <input type="tel" id="prayerPhone" name="phone" placeholder="Your phone number" autocomplete="tel" class="phone-input">
+                        </div>
+
+                        <button type="submit" class="submit-btn">Start My Journey</button>
+                    </form>
+                </div>
+
                 <a href="https://www.sayitwithyahchest.com" target="_blank" rel="noopener noreferrer" class="shop-btn">
                     Shop the Collection
                 </a>
@@ -247,6 +286,28 @@
             </div>
         </div>
     </section>
+
+    <!-- Prayer CTA Popup -->
+    <div class="prayer-cta-popup" id="prayerCtaPopup" style="display: none;">
+        <button class="prayer-cta-close" id="prayerCtaClose" aria-label="Close">×</button>
+        <div class="prayer-cta-content">
+            <span class="prayer-cta-badge">30-Day Journey</span>
+            <div class="prayer-cta-icon">🙏</div>
+            <h3>Start Your Day with Prayer</h3>
+            <p>Join thousands receiving daily prayers, scripture, and encouragement every morning at 7am.</p>
+            <button class="prayer-cta-button" id="prayerCtaButton">Yes, Send Me Daily Prayers</button>
+        </div>
+    </div>
+
+    <!-- Prayer Confirmation Modal -->
+    <div class="prayer-confirmation-modal" id="prayerConfirmationModal" style="display: none;">
+        <div class="prayer-confirmation-content">
+            <div class="prayer-hands-animation">🙏</div>
+            <h2>You're In!</h2>
+            <p class="prayer-loading-text">Prayers Loading...</p>
+            <p>Your first prayer arrives tomorrow at 7am.</p>
+        </div>
+    </div>
 
     <!-- Email Capture Modal -->
     <div class="modal-overlay" id="emailModal" style="display: none;">
@@ -363,16 +424,42 @@
             if ((emailCaptured || hasUidCookie || hasContactId) && window.emailCapture) {
                 setTimeout(() => {
                     window.emailCapture.showThankYouSection();
+
+                    // Show prayer CTA popup for returning users who haven't opted in yet
+                    window.emailCapture.showPrayerCtaAfterEmailOptIn();
                 }, 1000);
             }
         });
 
-        // TEMPORARY: Test function to preview Thank You section
-        // Remove this after testing
+        // TEMPORARY: Test functions
         window.testThankYou = function() {
             if (window.emailCapture) {
                 window.emailCapture.showThankYouSection();
             }
+        };
+
+        // Test function to show prayer CTA popup
+        window.testPrayerCTA = function() {
+            console.log('Manual test of prayer CTA');
+            if (window.emailCapture) {
+                // Clear any blocks
+                localStorage.removeItem('prayer_cta_dismissed');
+                localStorage.removeItem('prayer_journey_opted_in');
+                window.emailCapture.initPrayerCtaPopup();
+            } else {
+                console.error('emailCapture not available');
+            }
+        };
+
+        // Debug function to check localStorage
+        window.debugPrayerCTA = function() {
+            console.log('Prayer CTA Debug:', {
+                emailCaptured: localStorage.getItem('email_captured'),
+                prayerOptedIn: localStorage.getItem('prayer_journey_opted_in'),
+                ctaDismissed: localStorage.getItem('prayer_cta_dismissed'),
+                hasContactId: localStorage.getItem('ms_contact_id'),
+                popupElement: !!document.getElementById('prayerCtaPopup')
+            });
         };
     </script>
 

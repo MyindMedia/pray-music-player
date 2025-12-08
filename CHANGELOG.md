@@ -1,5 +1,17 @@
 # Changelog
 
+## 2025-12-08
+
+- Gated Tidal streaming link for first-time visitors until email is captured
+
+## 2025-11-20
+
+- Added 30-Day Prayer Journey opt-in under Thank You section
+- Implemented client-side checkbox/phone toggle and form submission
+- Created Netlify function `/api/opt-in-prayer` to add tag and update phone
+- Added Express endpoint `/api/opt-in-prayer` for local development
+- Integrated with existing email capture flow and Thank You reveal
+
 ## 2025-11-15
 
 - Align all Coming Soon card layers to video size for pixel-perfect stacking

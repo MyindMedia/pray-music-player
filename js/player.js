@@ -27,6 +27,7 @@ class AudioPlayer {
 
         // Album art
         this.albumArt = document.getElementById('albumArt');
+        this.tidalLink = document.querySelector('.tidal-link');
 
         // State
         this.isPlaying = false;
@@ -89,6 +90,25 @@ class AudioPlayer {
 
         // Load initial track so play works on first click
         this.loadTrack(this.currentTrackIndex);
+
+        if (this.tidalLink) {
+            const guard = (e) => {
+                const emailCaptured = localStorage.getItem('email_captured');
+                const hasUidCookie = document.cookie.includes('ms_uid=');
+                const hasContactId = !!localStorage.getItem('ms_contact_id');
+                if (!(emailCaptured || hasUidCookie || hasContactId)) {
+                    e.preventDefault();
+                    if (typeof EmailCapture !== 'undefined' && EmailCapture.showEmailModal) {
+                        EmailCapture.showEmailModal();
+                    } else {
+                        const emailModal = document.getElementById('emailModal');
+                        if (emailModal) emailModal.style.display = 'flex';
+                    }
+                }
+            };
+            this.tidalLink.addEventListener('click', guard);
+            this.tidalLink.addEventListener('auxclick', guard);
+        }
     }
 
     togglePlay() {

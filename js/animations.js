@@ -298,6 +298,7 @@ class AnimationController {
             // Click handler
             card.addEventListener('click', () => {
                 if (card.classList.contains('unwrapped')) return;
+                if (navigator && typeof navigator.vibrate === 'function') { try { navigator.vibrate(15); } catch(e) {} }
                 card.classList.add('unwrapped');
                 const overlay = card._overlayContainer;
                 const sticker = card._stickerPeel;
@@ -343,11 +344,12 @@ class AnimationController {
 
                 const onPeelComplete = () => {
                     if (overlay) {
-                        const cleanupOverlay = () => {
-                            if (sticker && typeof sticker.destroy === 'function') sticker.destroy();
-                            if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
-                            overlay.removeEventListener('transitionend', cleanupOverlay);
-                        };
+                    const cleanupOverlay = () => {
+                        if (navigator && typeof navigator.vibrate === 'function') { try { navigator.vibrate([10, 30, 10]); } catch(e) {} }
+                        if (sticker && typeof sticker.destroy === 'function') sticker.destroy();
+                        if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                        overlay.removeEventListener('transitionend', cleanupOverlay);
+                    };
                         if (main) {
                             main.style.transition = (main.style.transition ? main.style.transition + ', ' : '') + 'opacity 0.4s ease-out';
                             main.style.opacity = '0';
