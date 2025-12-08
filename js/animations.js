@@ -496,11 +496,13 @@ class AnimationController {
                             state.audio = new Audio(audioSrc);
                             state.audio.preload = 'auto';
                             state.audio.crossOrigin = 'anonymous';
+                            state.audio.load();
                         } else {
                             state.audio.src = audioSrc;
                         }
                         state.audio.volume = 1;
                     };
+                    ensureAudio();
                     const fadeOutAndStop = () => {
                         if (!state.audio) return;
                         if (state.fadeIntervalId) clearInterval(state.fadeIntervalId);
@@ -525,6 +527,7 @@ class AnimationController {
                     };
                     const startPlay = () => {
                         ensureAudio();
+                        if (window.msAudioBus && state.audio) window.msAudioBus.stopAllExcept(state.audio);
                         const begin = () => {
                             const start = Math.max(0, audioStart);
                             const end = start + Math.max(0, audioDuration);

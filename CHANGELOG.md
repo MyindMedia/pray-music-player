@@ -4,6 +4,7 @@
 
 - Gated Tidal streaming link for first-time visitors until email is captured
 - Updated THE SOURCE demo to `God-is-Good-Demo.mp3`, start at 2:20, play 20s with fade out
+- Optimized demo playback: prewarm audio and enforce single-audio playback across demos and main track
 
 ## 2025-11-20
 
