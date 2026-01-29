@@ -503,6 +503,26 @@ class AnimationController {
                         state.audio.volume = 1;
                     };
                     ensureAudio();
+                    if (!state.listenersAdded && state.audio) {
+                        state.listenersAdded = true;
+                        state.audio.addEventListener('play', () => {
+                            state.playing = true;
+                            if (state.playBtn) {
+                                state.playBtn.innerHTML = PAUSE_SVG;
+                                state.playBtn.setAttribute('aria-label', 'Pause demo');
+                                state.playBtn.classList.add('is-playing');
+                            }
+                        });
+                        state.audio.addEventListener('pause', () => {
+                            state.playing = false;
+                            if (window.msAudioBus) window.msAudioBus.remove(state.audio);
+                            if (state.playBtn) {
+                                state.playBtn.innerHTML = PLAY_SVG;
+                                state.playBtn.setAttribute('aria-label', 'Play demo');
+                                state.playBtn.classList.remove('is-playing');
+                            }
+                        });
+                    }
                     const fadeOutAndStop = () => {
                         if (!state.audio) return;
                         if (state.fadeIntervalId) clearInterval(state.fadeIntervalId);
